@@ -11,9 +11,14 @@
 
       <!-- Conditionally render the logout button -->
       <AuthState>
+
         <template #default="{ loggedIn, user }">
+          <div v-show="!loggedIn" class="github-login-container">
+            <NuxtLink v-if="!loggedIn" to="/auth/github" external class="github-login-button"> <v-icon
+                left>mdi-github</v-icon>
+              Sign in with GitHub</NuxtLink>
+          </div>
           <div v-show="loggedIn" class="user-info">
-            Welcome,
             <v-avatar class="user-avatar">
               <v-img :alt="user?.name" :src="user?.avatarUrl" />
             </v-avatar> {{ user?.name }}
@@ -35,16 +40,14 @@
     </v-toolbar>
 
     <!-- Date Range Selector - Hidden for seats tab -->
-    <DateRangeSelector 
-      v-show="tab !== 'seat analysis' && !signInRequired" 
-      :loading="isLoading"
+    <DateRangeSelector v-show="tab !== 'seat analysis' && tab !== 'home' && !signInRequired" :loading="isLoading"
       @date-range-changed="handleDateRangeChange" />
 
     <!-- Organization info for seats tab -->
     <div v-if="tab === 'seat analysis'" class="organization-info">
       <v-card flat class="pa-3 mb-2">
         <div class="text-body-2 text-center">
-          Displaying data for organization: <strong>{{ displayName }}</strong>
+          Displaying data for organization: <strong>{{ "Amway China Developer" }}</strong>
         </div>
       </v-card>
     </div>
@@ -52,13 +55,6 @@
     <!-- API Error Message -->
     <div v-show="apiError && !signInRequired" class="error-message" v-text="apiError" />
     <AuthState>
-      <template #default="{ loggedIn }">
-        <div v-show="signInRequired" class="github-login-container">
-          <NuxtLink v-if="!loggedIn && signInRequired" to="/auth/github" external class="github-login-button"> <v-icon
-              left>mdi-github</v-icon>
-            Sign in with GitHub</NuxtLink>
-        </div>
-      </template>
       <template #placeholder>
         <button disabled>Loading...</button>
       </template>
@@ -69,21 +65,19 @@
       <v-progress-linear v-show="!metricsReady" indeterminate color="indigo" />
       <v-window v-show="(metricsReady && metrics.length) || (seatsReady && tab === 'seat analysis')" v-model="tab">
         <v-window-item v-for="item in tabItems" :key="item" :value="item">
+          <Home v-if="item === 'home'" />
           <v-card flat>
             <MetricsViewer v-if="item === itemName" :metrics="metrics" :date-range-description="dateRangeDescription" />
-            <BreakdownComponent
-v-if="item === 'languages'" :metrics="metrics" :breakdown-key="'language'"
+            <BreakdownComponent v-if="item === 'languages'" :metrics="metrics" :breakdown-key="'language'"
               :date-range-description="dateRangeDescription" />
-            <BreakdownComponent
-v-if="item === 'editors'" :metrics="metrics" :breakdown-key="'editor'"
+            <BreakdownComponent v-if="item === 'editors'" :metrics="metrics" :breakdown-key="'editor'"
               :date-range-description="dateRangeDescription" />
-            <CopilotChatViewer
-v-if="item === 'copilot chat'" :metrics="metrics"
+            <CopilotChatViewer v-if="item === 'copilot chat'" :metrics="metrics"
               :date-range-description="dateRangeDescription" />
-            <AgentModeViewer v-if="item === 'github.com'" :original-metrics="originalMetrics" :date-range="dateRange" :date-range-description="dateRangeDescription" />
+            <AgentModeViewer v-if="item === 'github.com'" :original-metrics="originalMetrics" :date-range="dateRange"
+              :date-range-description="dateRangeDescription" />
             <SeatsAnalysisViewer v-if="item === 'seat analysis'" :seats="seats" />
-            <ApiResponse
-v-if="item === 'api response'" :metrics="metrics" :original-metrics="originalMetrics"
+            <ApiResponse v-if="item === 'api response'" :metrics="metrics" :original-metrics="originalMetrics"
               :seats="seats" />
           </v-card>
         </v-window-item>
@@ -104,6 +98,7 @@ import type { Seat } from "@/model/Seat";
 import type { H3Error } from 'h3'
 
 //Components
+import Home from './Home.vue'
 import MetricsViewer from './MetricsViewer.vue'
 import BreakdownComponent from './BreakdownComponent.vue'
 import CopilotChatViewer from './CopilotChatViewer.vue'
@@ -117,6 +112,7 @@ import { useRoute } from 'vue-router';
 export default defineNuxtComponent({
   name: 'MainComponent',
   components: {
+    Home,
     MetricsViewer,
     BreakdownComponent,
     CopilotChatViewer,
@@ -132,9 +128,9 @@ export default defineNuxtComponent({
       this.seats = [];
       clear();
     },
-    async handleDateRangeChange(newDateRange: { 
-      since?: string; 
-      until?: string; 
+    async handleDateRangeChange(newDateRange: {
+      since?: string;
+      until?: string;
       description: string;
       excludeHolidays?: boolean;
     }) {
@@ -161,12 +157,12 @@ export default defineNuxtComponent({
 
       try {
         const options = Options.fromRoute(this.route, this.dateRange.since, this.dateRange.until);
-        
+
         // Add holiday options if they're set
         if (this.holidayOptions?.excludeHolidays) {
           options.excludeHolidays = this.holidayOptions.excludeHolidays;
         }
-        
+
         const params = options.toParams();
 
         const queryString = new URLSearchParams(params).toString();
@@ -217,7 +213,7 @@ export default defineNuxtComponent({
     return {
       tabItems: ['languages', 'editors', 'copilot chat', 'github.com', 'seat analysis', 'api response'],
       tab: null,
-      dateRangeDescription: 'Over the last 28 days',
+      dateRangeDescription: 'Over the last 60 days',
       isLoading: false,
       metricsReady: false,
       metrics: [] as Metrics[],
@@ -233,6 +229,7 @@ export default defineNuxtComponent({
   },
   created() {
     this.tabItems.unshift(this.itemName);
+    this.tabItems.unshift('home');
     this.config = useRuntimeConfig();
   },
   async mounted() {
@@ -300,6 +297,7 @@ export default defineNuxtComponent({
 </script>
 
 <style scoped>
+ 
 .toolbar-title {
   white-space: nowrap;
   overflow: visible;
@@ -319,6 +317,7 @@ export default defineNuxtComponent({
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  margin-right: 20px;
 }
 
 .github-login-button {
@@ -356,4 +355,9 @@ export default defineNuxtComponent({
   background-color: #f5f5f5;
   border-left: 4px solid #1976d2;
 }
+
+.bg-indigo{
+  background-color: #0d1117 !important;
+}
+
 </style>

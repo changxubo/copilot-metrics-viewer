@@ -1,7 +1,7 @@
 <template>
     <div class="github-com-container">
-        <v-main class="p-1" style="min-height: 300px;">
-            <v-container style="min-height: 300px;" class="px-4 elevation-2">
+        <v-main class="p-1" style="min-height: 300px;max-width: 100%;color:#fff;">
+            <v-container style="min-height: 300px;max-width: 100%;" class="px-4 elevation-2">
                 <!-- Loading state -->
                 <div v-if="loading" class="d-flex justify-center align-center" style="min-height: 300px;">
                     <v-progress-circular indeterminate size="64" color="primary" />
@@ -31,7 +31,8 @@
                     </v-tooltip>
 
                     <!-- Date Range Information -->
-                    <v-card v-if="dateRangeDescription" flat class="pa-3 mb-4" color="blue-grey lighten-5">
+                    <v-card v-if="dateRangeDescription" flat class="pa-3 mb-4" color="blue-grey lighten-5"
+                        style="display:none;">
                         <div class="text-body-2 text-center">
                             <v-icon left small>mdi-calendar-range</v-icon>
                             {{ dateRangeDescription }}
@@ -40,8 +41,8 @@
 
                     <!-- Agent Mode Overview Cards -->
                     <v-row class="mb-4">
-                        <v-col cols="12" md="6" lg="3">
-                            <v-card elevation="4" color="blue lighten-4">
+                        <v-col cols="12" md="3" lg="3">
+                            <v-card elevation="4" class="dark-card" style="background-color:#1f77b4;color:#fff;">
                                 <v-card-title class="text-h6">
                                     <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
                                         <template #activator="{ props }">
@@ -62,8 +63,8 @@
                                 </v-card-text>
                             </v-card>
                         </v-col>
-                        <v-col cols="12" md="6" lg="3">
-                            <v-card elevation="4" color="green lighten-4">
+                        <v-col cols="12" md="3" lg="3">
+                            <v-card elevation="4" class="dark-card" style="background-color:#2ca02c;color:#fff;">
                                 <v-card-title class="text-h6">
                                     <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
                                         <template #activator="{ props }">
@@ -83,8 +84,8 @@
                                 </v-card-text>
                             </v-card>
                         </v-col>
-                        <v-col cols="12" md="6" lg="3">
-                            <v-card elevation="4" color="purple lighten-4">
+                        <v-col cols="12" md="3" lg="3">
+                            <v-card elevation="4" class="dark-card" style="background-color:#9467bd;color:#fff;">
                                 <v-card-title class="text-h6">
                                     <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
                                         <template #activator="{ props }">
@@ -104,8 +105,8 @@
                                 </v-card-text>
                             </v-card>
                         </v-col>
-                        <v-col cols="12" md="6" lg="3">
-                            <v-card elevation="4" color="orange lighten-4">
+                        <v-col cols="12" md="3" lg="3">
+                            <v-card elevation="4" class="dark-card" style="background-color:#ff7f0e;color:#fff;">
                                 <v-card-title class="text-h6">
                                     <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
                                         <template #activator="{ props }">
@@ -128,105 +129,139 @@
                         </v-col>
                     </v-row>
 
-                    <!-- Agent Mode Statistics Chart -->
-                    <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
-                        <template #activator="{ props }">
-                            <h2 v-bind="props" class="mb-1">Copilot Feature Usage Over Time</h2>
-                        </template>
-                        <v-card class="pa-2" style="background-color: #f0f0f0; max-width: 400px;">
-                            <span class="text-caption" style="font-size: 10px !important;">
-                                This chart shows the usage of different Copilot features over time.
-                            </span>
-                        </v-card>
-                    </v-tooltip>
-                    <div class="chart-container">
-                        <LineChart
-v-if="stats.agentModeChartData.labels.length" :data="stats.agentModeChartData"
-                            :options="chartOptions" />
-                    </div>
+                    <v-row class="mb-4">
+                        <v-col cols="12" md="6" lg="6">
+                            <!-- Agent Mode Statistics Chart -->
+                            <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
+                                <template #activator="{ props }">
+                                    <h2 v-bind="props" class="mb-1">Copilot Feature Usage Over Time</h2>
+                                </template>
+                                <v-card class="pa-2" style="background-color: #f0f0f0; max-width: 400px;">
+                                    <span class="text-caption" style="font-size: 10px !important;">
+                                        This chart shows the usage of different Copilot features over time.
+                                    </span>
+                                </v-card>
+                            </v-tooltip>
+                            <div class="chart-container dark-card">
+                                <LineChart v-if="stats.agentModeChartData.labels.length"
+                                    :data="stats.agentModeChartData" :options="chartOptions" />
+                            </div>
+                        </v-col>
 
-                    <!-- Models Used Section -->
-                    <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
-                        <template #activator="{ props }">
-                            <h2 v-bind="props" class="mb-4 mt-6">Models Used by Users</h2>
-                        </template>
-                        <v-card class="pa-2" style="background-color: #f0f0f0; max-width: 400px;">
-                            <span class="text-caption" style="font-size: 10px !important;">
-                                This section shows detailed information about the AI models used across different
-                                GitHub.com Copilot
-                                features.
-                            </span>
-                        </v-card>
-                    </v-tooltip>
+                        <v-col cols="12" md="6" lg="6">
 
-                    <!-- Models by Agent Mode -->
-                    <v-expansion-panels class="mb-4">
-                        <v-expansion-panel v-if="stats.ideCodeCompletionModels.length > 0">
-                            <v-expansion-panel-title>
-                                <v-icon start>mdi-code-braces</v-icon>
-                                IDE Code Completions Models ({{ stats.ideCodeCompletionModels.length }})
-                            </v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <v-data-table
-:headers="codeCompletionHeaders" :items="stats.ideCodeCompletionModels"
-                                    class="elevation-1" item-key="name" />
-                            </v-expansion-panel-text>
-                        </v-expansion-panel>
 
-                        <v-expansion-panel v-if="stats.ideChatModels.length > 0">
-                            <v-expansion-panel-title>
-                                <v-icon start>mdi-chat</v-icon>
-                                IDE Chat Models ({{ stats.ideChatModels.length }})
-                            </v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <v-data-table
-:headers="ideChatHeaders" :items="stats.ideChatModels" class="elevation-1"
-                                    item-key="name" />
-                            </v-expansion-panel-text>
-                        </v-expansion-panel>
 
-                        <v-expansion-panel v-if="stats.dotcomChatModels.length > 0">
-                            <v-expansion-panel-title>
-                                <v-icon start>mdi-web</v-icon>
-                                GitHub.com Chat Models ({{ stats.dotcomChatModels.length }})
-                            </v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <v-data-table
-:headers="dotcomChatHeaders" :items="stats.dotcomChatModels"
-                                    class="elevation-1" item-key="name" />
-                            </v-expansion-panel-text>
-                        </v-expansion-panel>
+                            <!-- Model Usage Summary Chart -->
+                            <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
+                                <template #activator="{ props }">
+                                    <h2 v-bind="props" class="mb-1">Model Usage Distribution</h2>
+                                </template>
+                                <v-card class="pa-2" style="background-color: #f0f0f0; max-width: 400px;">
+                                    <span class="text-caption" style="font-size: 10px !important;">
+                                        This chart shows the distribution of model usage across different GitHub.com
+                                        Copilot
+                                        features.
+                                    </span>
+                                </v-card>
+                            </v-tooltip>
+                            <div class="chart-container dark-card">
+                                <BarChart v-if="stats.modelUsageChartData.labels.length"
+                                    :data="stats.modelUsageChartData" :options="barChartOptions" />
+                            </div>
+                        </v-col>
+                    </v-row>
+                    <v-row class="mb-4">
 
-                        <v-expansion-panel v-if="stats.dotcomPRModels.length > 0">
-                            <v-expansion-panel-title>
-                                <v-icon start>mdi-source-pull</v-icon>
-                                GitHub.com PR Summary Models ({{ stats.dotcomPRModels.length }})
-                            </v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <v-data-table
-:headers="dotcomPRHeaders" :items="stats.dotcomPRModels"
-                                    class="elevation-1" item-key="name" />
-                            </v-expansion-panel-text>
-                        </v-expansion-panel>
-                    </v-expansion-panels>
+                        <v-col cols="12" md="6" lg="6">
+                            <!-- Models Used Section -->
+                            <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
+                                <template #activator="{ props }">
+                                    <h2 v-bind="props" class="mb-4 mt-6">Models Used by Users</h2>
+                                </template>
+                                <v-card class="pa-2" style="background-color: #f0f0f0; max-width: 400px;">
+                                    <span class="text-caption" style="font-size: 10px !important;">
+                                        This section shows detailed information about the AI models used across
+                                        different
+                                        GitHub.com Copilot
+                                        features.
+                                    </span>
+                                </v-card>
+                            </v-tooltip>
+                            <!-- Models by Agent Mode -->
+                            <v-expansion-panels class="mb-4 dark-card">
+                                <v-expansion-panel v-if="stats.ideCodeCompletionModels.length > 0">
+                                    <v-expansion-panel-title>
+                                        <v-icon start>mdi-code-braces</v-icon>
+                                        IDE Code Completions Models ({{ stats.ideCodeCompletionModels.length }})
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <v-data-table :headers="codeCompletionHeaders"
+                                            :items="stats.ideCodeCompletionModels" class="elevation-1"
+                                            item-key="name" />
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
 
-                    <!-- Model Usage Summary Chart -->
-                    <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
-                        <template #activator="{ props }">
-                            <h2 v-bind="props" class="mb-1">Model Usage Distribution</h2>
-                        </template>
-                        <v-card class="pa-2" style="background-color: #f0f0f0; max-width: 400px;">
-                            <span class="text-caption" style="font-size: 10px !important;">
-                                This chart shows the distribution of model usage across different GitHub.com Copilot
-                                features.
-                            </span>
-                        </v-card>
-                    </v-tooltip>
-                    <div class="chart-container">
-                        <BarChart
-v-if="stats.modelUsageChartData.labels.length" :data="stats.modelUsageChartData"
-                            :options="barChartOptions" />
-                    </div>
+
+
+                                <v-expansion-panel v-if="stats.dotcomChatModels.length > 0">
+                                    <v-expansion-panel-title>
+                                        <v-icon start>mdi-web</v-icon>
+                                        GitHub.com Chat Models ({{ stats.dotcomChatModels.length }})
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <v-data-table :headers="dotcomChatHeaders" :items="stats.dotcomChatModels"
+                                            class="elevation-1" item-key="name" />
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
+
+
+                            </v-expansion-panels>
+
+                        </v-col>
+                        <v-col cols="12" md="6" lg="6">
+                            <!-- Models Used Section -->
+                            <v-tooltip location="bottom start" open-on-hover open-delay="200" close-delay="200">
+                                <template #activator="{ props }">
+                                    <h2 v-bind="props" class="mb-4 mt-6">Models Used by Users</h2>
+                                </template>
+                                <v-card class="pa-2 dark-card" style="background-color: #f0f0f0; max-width: 400px;">
+                                    <span class="text-caption" style="font-size: 10px !important;">
+                                        This section shows detailed information about the AI models used across
+                                        different
+                                        GitHub.com Copilot
+                                        features.
+                                    </span>
+                                </v-card>
+                            </v-tooltip>
+                            <!-- Models by Agent Mode -->
+                            <v-expansion-panels class="mb-4 dark-card">
+
+                                <v-expansion-panel v-if="stats.ideChatModels.length > 0">
+                                    <v-expansion-panel-title>
+                                        <v-icon start>mdi-chat</v-icon>
+                                        IDE Chat Models ({{ stats.ideChatModels.length }})
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <v-data-table :headers="ideChatHeaders" :items="stats.ideChatModels"
+                                            class="elevation-1" item-key="name" />
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
+
+                                <v-expansion-panel v-if="stats.dotcomPRModels.length > 0">
+                                    <v-expansion-panel-title>
+                                        <v-icon start>mdi-source-pull</v-icon>
+                                        GitHub.com PR Summary Models ({{ stats.dotcomPRModels.length }})
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <v-data-table :headers="dotcomPRHeaders" :items="stats.dotcomPRModels"
+                                            class="elevation-1 dark-card" item-key="name" />
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
+                            </v-expansion-panels>
+                        </v-col>
+                    </v-row>
+
                 </div>
             </v-container>
         </v-main>

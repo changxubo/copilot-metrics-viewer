@@ -15,8 +15,8 @@ interface GitHubStats {
   ideChatModels: any[];
   dotcomChatModels: any[];
   dotcomPRModels: any[];
-  agentModeChartData: any[];
-  modelUsageChartData: any[];
+  agentModeChartData: any; // Chart.js dataset object
+  modelUsageChartData: any; // Chart.js dataset object
 }
 
 export default defineEventHandler(async (event) => {
@@ -165,30 +165,42 @@ function calculateGitHubStats(metrics: CopilotMetrics[]): GitHubStats {
       {
         label: 'IDE Code Completions',
         data: metrics.map(metric => metric.copilot_ide_code_completions?.total_engaged_users || 0),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        tension: 0.1
+        borderColor: '#1f77b4',
+        backgroundColor: 'rgba(31, 119, 180, 0.18)',
+        pointBackgroundColor: '#1f77b4',
+        pointBorderColor: '#fff',
+        pointRadius: 3,
+        tension: 0.25
       },
       {
         label: 'IDE Chat',
         data: metrics.map(metric => metric.copilot_ide_chat?.total_engaged_users || 0),
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        tension: 0.1
+        borderColor: '#2ca02c',
+        backgroundColor: 'rgba(44, 160, 44, 0.18)',
+        pointBackgroundColor: '#2ca02c',
+        pointBorderColor: '#fff',
+        pointRadius: 3,
+        tension: 0.25
       },
       {
         label: 'GitHub.com Chat',
         data: metrics.map(metric => metric.copilot_dotcom_chat?.total_engaged_users || 0),
-        borderColor: 'rgb(153, 102, 255)',
-        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-        tension: 0.1
+        borderColor: '#9467bd',
+        backgroundColor: 'rgba(148, 103, 189, 0.18)',
+        pointBackgroundColor: '#9467bd',
+        pointBorderColor: '#fff',
+        pointRadius: 3,
+        tension: 0.25
       },
       {
         label: 'GitHub.com PR',
         data: metrics.map(metric => metric.copilot_dotcom_pull_requests?.total_engaged_users || 0),
-        borderColor: 'rgb(255, 159, 64)',
-        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-        tension: 0.1
+        borderColor: '#ff7f0e',
+        backgroundColor: 'rgba(255, 127, 14, 0.18)',
+        pointBackgroundColor: '#ff7f0e',
+        pointBorderColor: '#fff',
+        pointRadius: 3,
+        tension: 0.25
       }
     ]
   };
@@ -205,18 +217,30 @@ function calculateGitHubStats(metrics: CopilotMetrics[]): GitHubStats {
           modelSets.dotcomPR.size
         ],
         backgroundColor: [
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-          'rgba(255, 159, 64, 0.6)'
+          'rgba(31, 119, 180, 0.65)',
+          'rgba(44, 160, 44, 0.65)',
+          'rgba(148, 103, 189, 0.65)',
+          'rgba(255, 127, 14, 0.65)'
         ],
         borderColor: [
-          'rgb(75, 192, 192)',
-          'rgb(255, 99, 132)',
-          'rgb(153, 102, 255)',
-          'rgb(255, 159, 64)'
+          '#1f77b4',
+          '#2ca02c',
+          '#9467bd',
+          '#ff7f0e'
         ],
-        borderWidth: 1
+        borderWidth: 2,
+        hoverBackgroundColor: [
+          'rgba(31, 119, 180, 0.85)',
+          'rgba(44, 160, 44, 0.85)',
+          'rgba(148, 103, 189, 0.85)',
+          'rgba(255, 127, 14, 0.85)'
+        ],
+        hoverBorderColor: [
+          '#1f77b4',
+          '#2ca02c',
+          '#9467bd',
+          '#ff7f0e'
+        ]
       }
     ]
   };

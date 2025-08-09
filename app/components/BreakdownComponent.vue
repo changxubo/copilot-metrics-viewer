@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="tiles-container">
+    <div class="tiles-container" style="display: none;">
       <!-- Acceptance Rate Tile -->  
       <v-card elevation="4" color="white" variant="elevated" class="mx-auto my-3" style="width: 300px; height: 175px;">
           <v-card-item>
@@ -16,14 +16,14 @@
       </v-card>
     </div>
 
-    <v-main class="p-1" style="min-height: 300px;">
-      <v-container style="min-height: 300px;" class="px-4 elevation-2">
+    <v-main class="p-1" style="min-height: 300px;max-width: 100%; color:#fff;">
+      <v-container style="min-height: 300px;max-width: 100%;" class="px-4 elevation-2">
         <v-row>
           <v-col cols="4">
-            <v-card>
+            <v-card class="dark-card">
               <v-card-item class="d-flex justify-center align-center">
-                <div class="spacing-25"/>
-                <div class="text-h6 mb-1">Top 5 {{ breakdownDisplayNamePlural }} by accepted suggestions (prompts)</div>
+                <div class="spacing-5"/>
+                <div class="text-h6 mb-1" style="max-width: 320px;">Accepted suggestions (prompts) Top 5 {{ breakdownDisplayNamePlural }}</div>
                 <div style="width: 300px; height: 300px;">
                   <Pie :data="breakdownsChartDataTop5AcceptedPrompts" :options="chartOptions" />
                 </div>
@@ -32,10 +32,10 @@
           </v-col>
 
           <v-col cols="4">
-            <v-card>
+            <v-card class="dark-card">
               <v-card-item class="d-flex justify-center align-center">
-                <div class="spacing-25"/>
-                <div class="text-h6 mb-1">Acceptance Rate (by count) for Top 5 {{ breakdownDisplayNamePlural }}</div>
+                <div class="spacing-5"/>
+                <div class="text-h6 mb-1" style="max-width: 280px;">Acceptance Rate (by count) Top 5 {{ breakdownDisplayNamePlural }}</div>
                 <div style="width: 300px; height: 300px;">
                   <Pie :data="breakdownsChartDataTop5AcceptedPromptsByCounts" :options="chartOptions" />
                 </div>
@@ -44,10 +44,10 @@
           </v-col>
 
           <v-col cols="4">
-            <v-card>
+            <v-card class="dark-card">
               <v-card-item class="d-flex justify-center align-center">
-                <div class="spacing-25"/>
-                <div class="text-h6 mb-1">Acceptance Rate (by code lines) for Top 5 {{ breakdownDisplayNamePlural }}</div>
+                <div class="spacing-5"/>
+                <div class="text-h6 mb-1" style="max-width: 280px;">Acceptance Rate (by lines) Top 5 {{ breakdownDisplayNamePlural }}</div>
                 <div style="width: 300px; height: 300px;">
                   <Pie :data="breakdownsChartDataTop5AcceptedPromptsByLines" :options="chartOptions" />
                 </div>
@@ -60,7 +60,7 @@
         <h2>{{ breakdownDisplayNamePlural }} Breakdown </h2>
         <br>
 
-        <v-data-table :headers="headers" :items="breakdownList" class="elevation-2" style="padding-left: 100px; padding-right: 100px;">
+        <v-data-table :headers="headers" :items="breakdownList" class="elevation-2 dark-card" style="padding-left: 10px; padding-right: 10px;">
             <template #item="{item}">
                 <tr>
                     <td>{{ item.name }}</td>
@@ -153,13 +153,31 @@ export default defineComponent({
       maintainAspectRatio: true,
     };
 
-    const pieChartColors = ref([
-    '#4B0082', // Indigo
-    '#41B883', // Vue Green
-    '#6495ED', // Cornflower Blue
-    '#87CEFA', // Light Sky Blue
-    '#7CFC00'  // Lawn Green
-]);
+    // Extended accessible palette (Okabe & Ito core + curated extensions avoiding low-contrast on white)
+    // Order chosen to maximize perceptual distance for first 5 (our usual slice count)
+    const basePalette = [
+      '#0072B2', // Blue
+      '#E69F00', // Orange
+      '#009E73', // Bluish Green
+      '#D55E00', // Vermillion
+      '#CC79A7', // Reddish Purple
+      '#56B4E9', // Sky Blue
+      '#F0E442', // Yellow (kept later to reduce overuse of bright yellow)
+      '#000000', // Black
+      '#666666', // Medium Gray
+      '#999999', // Light Gray
+      '#7F3C8D', // Violet (extension)
+      '#11A579', // Teal (extension)
+    ];
+
+    // Deterministic color assignment to keep colors stable across re-renders / ordering changes
+    const colorMap = new Map<string, string>();
+    const getColorForName = (name: string): string => {
+      if (colorMap.has(name)) return colorMap.get(name)!;
+      const color = basePalette[colorMap.size % basePalette.length]!;
+      colorMap.set(name, color);
+      return color;
+    };
 
     // Function to process breakdown data
     const processBreakdownData = (data: Metrics[]) => {
@@ -203,12 +221,16 @@ export default defineComponent({
       // Get the top 5 breakdowns by accepted prompts
       const top5BreakdownsAcceptedPrompts = breakdownList.value.slice(0, 5);
       
+  const pieColors = top5BreakdownsAcceptedPrompts.map(b => getColorForName(b.name));
       breakdownsChartDataTop5AcceptedPrompts.value = {
         labels: top5BreakdownsAcceptedPrompts.map(breakdown => breakdown.name),
         datasets: [
           {
             data: top5BreakdownsAcceptedPrompts.map(breakdown => breakdown.acceptedPrompts),
-            backgroundColor: pieChartColors.value,
+    backgroundColor: pieColors,
+    borderColor: pieColors.map(() => '#FFFFFF'), // white border for clearer slice separation
+    borderWidth: 2,
+            hoverOffset: 6,
           },
         ],
       };
@@ -218,7 +240,10 @@ export default defineComponent({
         datasets: [
           {
             data: top5BreakdownsAcceptedPrompts.map(breakdown => breakdown.acceptanceRateByLines.toFixed(2)),
-            backgroundColor: pieChartColors.value,
+    backgroundColor: pieColors,
+    borderColor: pieColors.map(() => '#FFFFFF'),
+    borderWidth: 2,
+            hoverOffset: 6,
           },
         ],
       };
@@ -228,7 +253,10 @@ export default defineComponent({
         datasets: [
           {
             data: top5BreakdownsAcceptedPrompts.map(breakdown => breakdown.acceptanceRateByCount.toFixed(2)),
-            backgroundColor: pieChartColors.value,
+    backgroundColor: pieColors,
+    borderColor: pieColors.map(() => '#FFFFFF'),
+    borderWidth: 2,
+            hoverOffset: 6,
           },
         ],
       };

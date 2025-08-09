@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container max-width="100%" style="color:#fff;">
     <div class="copy-container">
       <v-btn @click="checkMetricsDataQuality">Check Metric data quality</v-btn>
       <v-spacer/>
@@ -13,9 +13,9 @@
       <br><br>
 
       <!-- Displaying the JSON object -->
-      <v-card max-height="575px" class="overflow-y-auto">
-          <pre ref="metricsJsonText">{{ JSON.stringify(originalMetrics, null, 2) }}</pre>
-      </v-card>
+    <v-card max-height="375px"  max-width="100%" class="overflow-y-auto">
+      <pre ref="metricsJsonText" class="json-block" v-html="highlightedOriginalMetrics" />
+    </v-card>
       <br>
       
       <div class="copy-container">
@@ -25,9 +25,9 @@
         </transition>
       </div>
 
-      <v-card max-height="575px" class="overflow-y-auto">
-          <pre ref="seatJsonText">{{ JSON.stringify(seats, null, 2) }}</pre>
-      </v-card>
+    <v-card max-height="375px" max-width="100%" class="overflow-y-auto">
+      <pre ref="seatJsonText" class="json-block" v-html="highlightedSeats" />
+    </v-card>
       <br>
   </v-container>
 </template>
@@ -55,6 +55,14 @@ export default defineComponent({
       required: true
     }
   },
+  computed: {
+    highlightedOriginalMetrics(): string {
+      return this.syntaxHighlight(this.originalMetrics);
+    },
+    highlightedSeats(): string {
+      return this.syntaxHighlight(this.seats);
+    }
+  },
   data() {
     return {
       showCopyMessage: false,
@@ -66,6 +74,29 @@ export default defineComponent({
     };
   },
   methods: {
+    // Lightweight JSON syntax highlighter producing HTML spans
+    syntaxHighlight(obj: any): string {
+      try {
+        let json = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+        // Escape HTML entities
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"\s*:|"(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+          let cls = 'number';
+            if (/^".*":$/.test(match)) {
+              cls = 'key';
+            } else if (/^"/.test(match)) {
+              cls = 'string';
+            } else if (/true|false/.test(match)) {
+              cls = 'boolean';
+            } else if (/null/.test(match)) {
+              cls = 'null';
+            }
+          return `<span class="token ${cls}">${match}</span>`;
+        });
+      } catch (e) {
+        return '/* Unable to render JSON */';
+      }
+    },
     copyToClipboard(refName: string) {
       const jsonText = this.$refs[refName] as HTMLElement;
       navigator.clipboard.writeText(jsonText.innerText)
@@ -213,4 +244,29 @@ export default defineComponent({
 .fade-enter, .fade-leave-to {
   opacity: 0;
 }
+.json-block {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  background: #0f172a; /* slate-900 */
+  color: #e2e8f0; /* slate-200 */
+  padding: 12px 16px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1px solid #1e293b; /* slate-800 */
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #0f172a;
+  tab-size: 2;
+  white-space: pre;
+}
+.json-block::-webkit-scrollbar { width: 10px; height: 10px; }
+.json-block::-webkit-scrollbar-track { background: #0f172a; }
+.json-block::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+.json-block::-webkit-scrollbar-thumb:hover { background: #475569; }
+.json-block .token.key { color: #60a5fa; }
+.json-block .token.string { color: #a3e635; }
+.json-block .token.number { color: #fbbf24; }
+.json-block .token.boolean { color: #f472b6; }
+.json-block .token.null { color: #94a3b8; font-style: italic; }
 </style>
